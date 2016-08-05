@@ -45,10 +45,6 @@ class PartyTestsDatabase(unittest.TestCase):
         app.config['TESTING'] = True
         app.config['SECRET_KEY'] = 'key'
 
-        with self.client as c:
-            with c.session_transaction() as sess:
-                sess['RSVP'] = True
-
         # Connect to test database (uncomment when testing database)
         connect_to_db(app, "postgresql:///testdb")
 
@@ -63,12 +59,26 @@ class PartyTestsDatabase(unittest.TestCase):
         db.session.close()
         db.drop_all()
 
-    def test_games(self):
+    def test_games_RSVP(self):
         """Test to see if game name and description loads on page"""
+
+        with self.client.session_transaction() as sess:
+            sess['RSVP'] = True
+
+        # with self.client as c:
+        #     with c.session_transaction() as sess:
+        #         sess['RSVP'] = True
+
         result = self.client.get("/games")
         self.assertEqual(result.status_code, 200)
         self.assertIn('Donkey', result.data)
         self.assertIn('Tic', result.data)
+
+    def test_games_no_RSVP(self):
+        """Test to see if game name and description loads on page"""
+        result = self.client.get("/games",
+                                  follow_redirects=True)
+        self.assertIn('Please RSVP', result.data)
 
 
 if __name__ == "__main__":

@@ -32,7 +32,9 @@ def rsvp():
 def games():
     games = Game.query.all()
 
-    if session['RSVP']:
+
+
+    if session.get('RSVP'):
         return render_template("games.html", games=games)
     else:
         flash("Please RSVP first!")
